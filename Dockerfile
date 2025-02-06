@@ -1,21 +1,19 @@
-FROM nginx:1.12.0-alpine
+FROM nginx:1.27.4-alpine
+LABEL version="2.0.0"
 
 RUN apk -v --update add \
-        python \
+        curl \
+        python3 \
         py-pip \
-        && \
-    pip install --upgrade pip awscli==1.11.92 && \
-    apk -v --purge del py-pip && \
-    rm /var/cache/apk/*
+        jq \
+    && pip install --upgrade pip awscli --break-system-packages \
+    && apk -v --purge del py-pip \
+    && rm /var/cache/apk/*
 
-ADD configs/nginx/nginx.conf /etc/nginx/nginx.conf
-ADD configs/nginx/ssl /etc/nginx/ssl
+COPY configs/nginx /etc/nginx
+COPY configs/*.sh /
 
-ADD configs/entrypoint.sh /entrypoint.sh
-ADD configs/auth_update.sh /auth_update.sh
-ADD configs/renew_token.sh /renew_token.sh
-
-EXPOSE 80 443
+EXPOSE 80
 
 ENTRYPOINT ["/entrypoint.sh"]
 
